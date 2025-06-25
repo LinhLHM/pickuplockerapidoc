@@ -110,8 +110,7 @@ paths:
       description: >
         Tạo access token mới từ refresh token còn hiệu lực.  
         Nếu refresh token không hợp lệ hoặc hết hạn, trả lỗi tương ứng.
-      tags:
-        - Authentication
+      tags: [Auth]
       requestBody:
         required: true
         content:
@@ -249,7 +248,7 @@ paths:
                     type: string
                     example: ログアウトに失敗しました。
 
-  /store/cells-condition/:storeId:
+  /store/cells-condition/{storeId}:
     get:
       summary: Get trạng thái của tất cả các ô của locker
       description: >
