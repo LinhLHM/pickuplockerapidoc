@@ -30,7 +30,6 @@ paths:
               properties:
                 id:
                   type: string
-                  format: email
                   example: s001
                 password:
                   type: string
@@ -204,6 +203,18 @@ paths:
       summary: Đăng xuất
       description: Xóa refresh token ở DB
       tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       responses:
         '200':
           description: Đăng xuất thành công
@@ -305,3 +316,213 @@ paths:
                   message:
                     type: string
                     example: ロッカーの状態の取得に失敗しました。
+
+  /store/list-cells-by-status:
+    post:
+      summary: Lấy list cell bằng status
+      description: >
+        Lấy list cell bằng status
+        Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - status
+              properties:
+                id:
+                  type: string
+                  example: s001
+                status:
+                  type: string
+                  example: すべて
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lấy list thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locker_cells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        locker_cell_id:
+                          type: string
+                        locker_name:
+                          type: string
+                        display_cell_number:
+                          type: integer
+                        status:
+                          type: string
+                        last_action_time:
+                          type: string
+                    example:
+                      - locker_cell_id: "lc0067"
+                        locker_name: "Locker 5"
+                        display_cell_number: 1
+                        status: "使用可能"
+                        last_action_time: "2025-06-22T06:34:22.000Z"
+                      - locker_cell_id: "lc0094"
+                        locker_name: "Locker 6"
+                        display_cell_number: 2
+                        status: "使用可能"
+                        last_action_time: "2025-06-20T06:34:22.000Z"
+                      - locker_cell_id: "lc0012"
+                        locker_name: "Locker 1"
+                        display_cell_number: 3
+                        status: "使用可能"
+                        last_action_time: null
+                      - locker_cell_id: "lc0058"
+                        locker_name: "Locker 4"
+                        display_cell_number: 4
+                        status: "使用中"
+                        last_action_time: null
+                      - locker_cell_id: "lc0033"
+                        locker_name: "Locker 2"
+                        display_cell_number: 5
+                        status: "延滞中"
+                        last_action_time: null
+        '500':
+          description: 	Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルの一覧取得に失敗しました。
+
+  /store/cell-detail/{cellId}:
+    get:
+      summary: Get thông tin chi tiết của ô tủ locker
+      description: >
+        Lấy thông tin chi tiết của ô tủ locker
+        Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      parameters:
+        - name: cellId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID của ô tủ locker
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: 使用中
+                  total_usages:
+                    type: integer
+                    example: 3
+                  usages_today:
+                    type: integer
+                    example: 3
+                  cell_detail:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        usage_id:
+                          type: integer
+                        locker_cell_id:
+                          type: string
+                        locker_id:
+                          type: string
+                        cell_number:
+                          type: integer
+                        display_cell_number:
+                          type: integer
+                        raspberry_pi_id:
+                          type: string
+                        locker_name:
+                          type: string
+                        store_id:
+                          type: string
+                        action_type:
+                          type: string
+                          enum: ["PUT", "TAKE", "FORCE_OPEN"]
+                        action_time:
+                          type: string
+                        product_serial_number:
+                          type: string
+                        staff_information:
+                          type: string
+                    example:
+                      - usage_id: 407
+                        locker_cell_id: "lc0009"
+                        locker_id: "l001"
+                        cell_number: 9
+                        display_cell_number: 1
+                        raspberry_pi_id: "pi001"
+                        locker_name: "Locker 1"
+                        store_id: "s001"
+                        action_type: "PUT"
+                        action_time: "2025-06-22T06:34:22.000Z"
+                        product_serial_number: "SN795463"
+                        staff_information: "staff1"
+                      - usage_id: 411
+                        locker_cell_id: "lc0009"
+                        locker_id: "l001"
+                        cell_number: 9
+                        display_cell_number: 2
+                        raspberry_pi_id: "pi001"
+                        locker_name: "Locker 1"
+                        store_id: "s001"
+                        action_type: "TAKE"
+                        action_time: "2025-05-30T06:34:22.000Z"
+                        product_serial_number: "SN351540"
+                        staff_information: "staff12"
+                      - usage_id: 420
+                        locker_cell_id: "lc0009"
+                        locker_id: "l001"
+                        cell_number: 9
+                        display_cell_number: 2
+                        raspberry_pi_id: "pi001"
+                        locker_name: "Locker 1"
+                        store_id: "s001"
+                        action_type: "FORCE_OPEN"
+                        action_time: "2025-05-30T06:34:22.000Z"
+                        product_serial_number: "SN351540"
+                        staff_information: "staff12"
+        '500':
+            description: 	Server error
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: error
+                    status_code:
+                      type: integer
+                      example: 500
+                    message:
+                      type: string
+                      example: ロッカーセルの詳細取得に失敗しました。          
