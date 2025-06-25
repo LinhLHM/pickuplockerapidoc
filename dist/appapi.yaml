@@ -98,7 +98,6 @@ paths:
                     type: string
                     example: ログインに失敗しました。
 
-paths:
   /auth/refresh:
     post:
       summary: Refresh Access Token
