@@ -1,0 +1,245 @@
+openapi: 3.0.3
+info:
+  title: Auth API
+  version: 1.0.0
+  description: API for app authentication with JWT access/refresh tokens
+
+paths:
+  /auth/login:
+    post:
+      summary: Store login
+      description:
+        Đăng nhập bằng id store và password trả về accesstoken, refreshtoken và store infomation.
+        Nếu lỗi trả về lỗi tương ứng.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - password
+              properties:
+                id:
+                  type: string
+                  format: email
+                  example: s001
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  storeInfo:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: s001
+                      store_name:
+                        type: string
+                        example: さくら渋谷店
+                      address:
+                        type: string
+                        example: 東京都渋谷区1-1-1
+                      management_user_id:
+                        type: string
+                        example: cli001
+                      created_at:
+                        type: string
+                        example: 2025-06-22T05:23:21.000Z
+                      updated_at:
+                        type: string
+                        example: 2025-06-22T05:23:21.000Z
+        '401':
+          description: Incorrect login credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 401
+                  message:
+                    type: string
+                    example: ログイン情報が正しくありません。
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 500
+                  message:
+                    type: string
+                    example: ログインに失敗しました。
+
+paths:
+  /auth/refresh:
+    post:
+      summary: Refresh Access Token
+      description: >
+        Tạo access token mới từ refresh token còn hiệu lực.  
+        Nếu refresh token không hợp lệ hoặc hết hạn, trả lỗi tương ứng.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Accesstoken mới
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Không có refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 400
+                  message:
+                    type: string
+                    example: リフレッシュトークンが必要です。
+        '401':
+          description: Refresh token hết hạn
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 401
+                  message:
+                    type: string
+                    example: リフレッシュトークンの有効期限が切れました。
+        '403':
+          description: Refresh token không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 403
+                  message:
+                    type: string
+                    example: 無効なリフレッシュトークンです。
+        '500':
+          description: 	Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 500
+                  message:
+                    type: string
+                    example: トークンの更新に失敗しました。
+
+  /auth/logout:
+    post:
+      summary: Đăng xuất
+      description: Xóa refresh token ở DB
+      tags: [Auth]
+      responses:
+        '200':
+          description: Đăng xuất thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ログアウトが完了しました。
+        '400':
+          description: 	Lỗi không có refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 400
+                  message:
+                    type: string
+                    example: ログアウトに失敗しました。
+        '500':
+          description: 	Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: int
+                    example: 500
+                  message:
+                    type: string
+                    example: ログアウトに失敗しました。
