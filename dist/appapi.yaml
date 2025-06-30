@@ -5,10 +5,46 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token bị thiếu, hết hạn hoặc không hợp lệ
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              status_code:
+                type: integer
+                example: 401
+              message:
+                type: string
+          examples:
+            missingToken:
+              summary: Không có access token
+              value:
+                status: error
+                status_code: 401
+                message: アクセストークンを指定してください。
+            invalidToken:
+              summary: Access token hết hạn hoặc không hợp lệ
+              value:
+                status: error
+                status_code: 401
+                message: アクセストークンが無効か有効期限が切れています。
+            invalidOldPassword:
+              summary: Mật khẩu cũ nhập vào không đúng
+              value:
+                status: error
+                status_code: 401
+                message: 現在のパスワードが正しくありません。
+
 info:
   title: Auth API
   version: 1.0.0
-  description: API for app authentication with JWT access/refresh tokens
+  description: API for app authentication with access/refresh tokens
 
 paths:
   /auth/login:
@@ -36,8 +72,8 @@ paths:
                   format: password
                   example: secret123
       responses:
-        '200':
-          description: Login successful
+        "200":
+          description: Login successfull
           content:
             application/json:
               schema:
@@ -52,7 +88,7 @@ paths:
                   storeInfo:
                     type: object
                     properties:
-                      id:
+                      storeId:
                         type: string
                         example: s001
                       store_name:
@@ -70,7 +106,7 @@ paths:
                       updated_at:
                         type: string
                         example: 2025-06-22T05:23:21.000Z
-        '401':
+        "401":
           description: Incorrect login credentials.
           content:
             application/json:
@@ -86,7 +122,7 @@ paths:
                   message:
                     type: string
                     example: ログイン情報が正しくありません。
-        '500':
+        "500":
           description: Server error
           content:
             application/json:
@@ -108,7 +144,7 @@ paths:
       summary: Refresh Access Token
       description: >
         Tạo access token mới từ refresh token còn hiệu lực.  
-        Nếu refresh token không hợp lệ hoặc hết hạn, trả lỗi tương ứng.
+        Nếu refresh token không hợp lệ hoặc hết hạn, trả lỗi tương ứng và logout người dùng khỏi tài khoản đang dùng
       tags: [Auth]
       requestBody:
         required: true
@@ -123,7 +159,7 @@ paths:
                   type: string
                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       responses:
-        '200':
+        "200":
           description: Accesstoken mới
           content:
             application/json:
@@ -133,7 +169,7 @@ paths:
                   accessToken:
                     type: string
                     example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        '400':
+        "400":
           description: Không có refresh token
           content:
             application/json:
@@ -149,7 +185,7 @@ paths:
                   message:
                     type: string
                     example: リフレッシュトークンが必要です。
-        '401':
+        "401":
           description: Refresh token hết hạn
           content:
             application/json:
@@ -165,7 +201,7 @@ paths:
                   message:
                     type: string
                     example: リフレッシュトークンの有効期限が切れました。
-        '403':
+        "403":
           description: Refresh token không hợp lệ
           content:
             application/json:
@@ -181,8 +217,8 @@ paths:
                   message:
                     type: string
                     example: 無効なリフレッシュトークンです。
-        '500':
-          description: 	Server error
+        "500":
+          description: Server error
           content:
             application/json:
               schema:
@@ -216,7 +252,7 @@ paths:
                   type: string
                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
       responses:
-        '200':
+        "200":
           description: Đăng xuất thành công
           content:
             application/json:
@@ -226,8 +262,8 @@ paths:
                   message:
                     type: string
                     example: ログアウトが完了しました。
-        '400':
-          description: 	Lỗi không có refresh token
+        "400":
+          description: Lỗi không có refresh token
           content:
             application/json:
               schema:
@@ -242,8 +278,8 @@ paths:
                   message:
                     type: string
                     example: ログアウトに失敗しました。
-        '500':
-          description: 	Server error
+        "500":
+          description: Server error
           content:
             application/json:
               schema:
@@ -277,7 +313,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Lấy thông tin thành công
           content:
             application/json:
@@ -300,8 +336,8 @@ paths:
                           number_of_cells: 4
                         - status: "延滞中"
                           number_of_cells: 3
-        '500':
-          description: 	Server error
+        "500":
+          description: Server error
           content:
             application/json:
               schema:
@@ -344,7 +380,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Lấy list thành công
           content:
             application/json:
@@ -392,8 +428,8 @@ paths:
                         display_cell_number: 5
                         status: "延滞中"
                         last_action_time: null
-        '500':
-          description: 	Server error
+        "500":
+          description: Server error
           content:
             application/json:
               schema:
@@ -427,7 +463,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Lấy thông tin thành công
           content:
             application/json:
@@ -510,19 +546,137 @@ paths:
                         action_time: "2025-05-30T06:34:22.000Z"
                         product_serial_number: "SN351540"
                         staff_information: "staff12"
-        '500':
-            description: 	Server error
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    status:
-                      type: string
-                      example: error
-                    status_code:
-                      type: integer
-                      example: 500
-                    message:
-                      type: string
-                      example: ロッカーセルの詳細取得に失敗しました。          
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルの詳細取得に失敗しました。
+
+  /store/init-password:
+    post:
+      summary: Thay đổi mật khẩu khi lần đầu tiên đăng nhập
+      description: >
+        Thay đổi mật khẩu khi lần đầu tiên đăng nhập
+        Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - storeId
+                - newPassword
+              properties:
+                storeId:
+                  type: string
+                  example: s001
+                newPassword:
+                  type: string
+                  format: password
+                  example: secret123
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Thay đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: パスワードが正常に設定されました。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: パスワードを設定できませんでした。
+
+  /store/change-password:
+    post:
+      summary: Thay đổi mật khẩu
+      description: >
+        Thay đổi mật khẩu
+        Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - storeId
+                - oldPassword
+                - newPassword
+              properties:
+                storeId:
+                  type: string
+                  example: s001
+                oldPassword:
+                  type: string
+                  format: password
+                  example: secret12345
+                newPassword:
+                  type: string
+                  format: password
+                  example: secret123
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Thay đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: パスワードが正常に変更されました。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: パスワード変更中に予期しないエラーが発生しました。
