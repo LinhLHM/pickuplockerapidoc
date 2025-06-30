@@ -94,6 +94,9 @@ paths:
                       management_user_id:
                         type: string
                         example: cli001
+                      isChangePassword:
+                        type: boolean
+                        example: false
                       created_at:
                         type: string
                         example: 2025-06-22T05:23:21.000Z
