@@ -299,8 +299,7 @@ paths:
     get:
       summary: Get trạng thái của tất cả các ô của locker
       description: >
-        Lấy trạng thái của tất cả các ô của locker
-        Yêu cầu xác thực bằng Bearer Token trong header.
+        Lấy trạng thái của tất cả các ô của locker. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       parameters:
@@ -336,6 +335,8 @@ paths:
                           number_of_cells: 4
                         - status: "延滞中"
                           number_of_cells: 3
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "500":
           description: Server error
           content:
@@ -357,8 +358,7 @@ paths:
     post:
       summary: Lấy list cell bằng status
       description: >
-        Lấy list cell bằng status
-        Yêu cầu xác thực bằng Bearer Token trong header.
+        Lấy list cell bằng status. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       requestBody:
@@ -428,6 +428,8 @@ paths:
                         display_cell_number: 5
                         status: "延滞中"
                         last_action_time: null
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "500":
           description: Server error
           content:
@@ -449,8 +451,7 @@ paths:
     get:
       summary: Get thông tin chi tiết của ô tủ locker
       description: >
-        Lấy thông tin chi tiết của ô tủ locker
-        Yêu cầu xác thực bằng Bearer Token trong header.
+        Lấy thông tin chi tiết của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       parameters:
@@ -546,6 +547,8 @@ paths:
                         action_time: "2025-05-30T06:34:22.000Z"
                         product_serial_number: "SN351540"
                         staff_information: "staff12"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "500":
           description: Server error
           content:
@@ -567,8 +570,7 @@ paths:
     post:
       summary: Thay đổi mật khẩu khi lần đầu tiên đăng nhập
       description: >
-        Thay đổi mật khẩu khi lần đầu tiên đăng nhập
-        Yêu cầu xác thực bằng Bearer Token trong header.
+        Thay đổi mật khẩu khi lần đầu tiên đăng nhập. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       requestBody:
@@ -601,6 +603,8 @@ paths:
                   message:
                     type: string
                     example: パスワードが正常に設定されました。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "500":
           description: Server error
           content:
@@ -622,8 +626,7 @@ paths:
     post:
       summary: Thay đổi mật khẩu
       description: >
-        Thay đổi mật khẩu
-        Yêu cầu xác thực bằng Bearer Token trong header.
+        Thay đổi mật khẩu. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       requestBody:
