@@ -365,10 +365,10 @@ paths:
             schema:
               type: object
               required:
-                - id
+                - storeId
                 - status
               properties:
-                id:
+                storeId:
                   type: string
                   example: s001
                 status:
