@@ -34,12 +34,6 @@ components:
                 status: error
                 status_code: 401
                 message: アクセストークンが無効か有効期限が切れています。
-            invalidOldPassword:
-              summary: Mật khẩu cũ nhập vào không đúng
-              value:
-                status: error
-                status_code: 401
-                message: 現在のパスワードが正しくありません。
 
 info:
   title: Auth API
@@ -665,7 +659,39 @@ paths:
                     type: string
                     example: パスワードが正常に変更されました。
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Mật khẩu cũ nhập vào không đúng hoặc Access token bị thiếu, hết hạn hoặc không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+              examples:
+                missingToken:
+                  summary: Không có access token
+                  value:
+                    status: error
+                    status_code: 401
+                    message: アクセストークンを指定してください。
+                invalidToken:
+                  summary: Access token hết hạn hoặc không hợp lệ
+                  value:
+                    status: error
+                    status_code: 401
+                    message: アクセストークンが無効か有効期限が切れています。
+                invalidOldPassword:
+                  summary: Mật khẩu cũ nhập vào không đúng
+                  value:
+                    status: error
+                    status_code: 401
+                    message: 現在のパスワードが正しくありません。
 
         "500":
           description: Server error
