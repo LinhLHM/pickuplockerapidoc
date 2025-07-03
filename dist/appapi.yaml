@@ -115,7 +115,7 @@ paths:
                     example: error
                   status_code:
                     type: integer
-                    example: 401
+                    example: 400
                   message:
                     type: string
                     example: ログイン情報が正しくありません。
