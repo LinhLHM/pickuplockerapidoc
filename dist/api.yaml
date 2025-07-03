@@ -318,4 +318,4 @@ paths:
                   type: string
       responses:
         '200':
-          description: Store activated
+          description: Store activated successfully
