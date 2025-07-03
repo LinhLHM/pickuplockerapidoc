@@ -103,7 +103,7 @@ paths:
                       updated_at:
                         type: string
                         example: 2025-06-22T05:23:21.000Z
-        "401":
+        "400":
           description: Incorrect login credentials.
           content:
             application/json:
@@ -355,7 +355,7 @@ paths:
     post:
       summary: Lấy list cell bằng status
       description: >
-        Lấy list cell bằng status. Yêu cầu xác thực bằng Bearer Token trong header.
+        Lấy list cell bằng status theo trang. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       requestBody:
@@ -367,6 +367,7 @@ paths:
               required:
                 - storeId
                 - status
+                - page
               properties:
                 storeId:
                   type: string
@@ -374,6 +375,9 @@ paths:
                 status:
                   type: string
                   example: すべて
+                page:
+                  type: integer
+                  example: 1
       security:
         - bearerAuth: []
       responses:
@@ -384,6 +388,18 @@ paths:
               schema:
                 type: object
                 properties:
+                  pagination:
+                    type: object
+                    properties:
+                      page: 
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 10
+                      totalItems:
+                        type: integer
+                        example: 100
                   locker_cells:
                     type: array
                     items:
@@ -444,20 +460,29 @@ paths:
                     type: string
                     example: ロッカーセルの一覧取得に失敗しました。
 
-  /store/cell-detail/{cellId}:
-    get:
-      summary: Get thông tin chi tiết của ô tủ locker
+  /store/cell-detail:
+    post:
+      summary: Lấy thông tin chi tiết của ô tủ locker theo trang
       description: >
         Lấy thông tin chi tiết của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
-      parameters:
-        - name: cellId
-          in: path
-          required: true
-          schema:
-            type: string
-            description: ID của ô tủ locker
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cellId
+                - page
+              properties:
+                cellId:
+                  type: string
+                  example: lc0009
+                page:
+                  type: integer
+                  example: 1
       security:
         - bearerAuth: []
       responses:
@@ -468,6 +493,18 @@ paths:
               schema:
                 type: object
                 properties:
+                  pagination:
+                      type: object
+                      properties:
+                        page: 
+                          type: integer
+                          example: 1
+                        totalPages:
+                          type: integer
+                          example: 10
+                        totalItems:
+                          type: integer
+                          example: 100
                   status:
                     type: string
                     example: 使用中
@@ -661,8 +698,8 @@ paths:
                   message:
                     type: string
                     example: パスワードが正常に変更されました。
-        "401":
-          description: Mật khẩu cũ nhập vào không đúng hoặc Access token bị thiếu, hết hạn hoặc không hợp lệ
+        "400":
+          description: Mật khẩu cũ nhập vào không đúng
           content:
             application/json:
               schema:
@@ -673,29 +710,12 @@ paths:
                     example: error
                   status_code:
                     type: integer
-                    example: 401
+                    example: 400
                   message:
                     type: string
-              examples:
-                missingToken:
-                  summary: Không có access token
-                  value:
-                    status: error
-                    status_code: 401
-                    message: アクセストークンを指定してください。
-                invalidToken:
-                  summary: Access token hết hạn hoặc không hợp lệ
-                  value:
-                    status: error
-                    status_code: 401
-                    message: アクセストークンが無効か有効期限が切れています。
-                invalidOldPassword:
-                  summary: Mật khẩu cũ nhập vào không đúng
-                  value:
-                    status: error
-                    status_code: 401
-                    message: 現在のパスワードが正しくありません。
-
+                    example: 入力された旧パスワードが正しくありません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "500":
           description: Server error
           content:
