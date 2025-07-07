@@ -505,82 +505,90 @@ paths:
                         totalItems:
                           type: integer
                           example: 100
-                  status:
-                    type: string
-                    example: 使用中
-                  total_usages:
-                    type: integer
-                    example: 3
-                  usages_today:
-                    type: integer
-                    example: 3
                   cell_detail:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        usage_id:
-                          type: integer
-                        locker_cell_id:
+                    type: object
+                    properties:
+                      locker_name:
+                        type: string
+                        example: Locker 25
+                      display_cell_number:
+                        type: integer
+                        example: 3
+                      status:
+                        type: string
+                        example: 延滞中
+                      products:
+                        type: array
+                        items:
                           type: string
-                        locker_id:
-                          type: string
-                        cell_number:
-                          type: integer
-                        display_cell_number:
-                          type: integer
-                        raspberry_pi_id:
-                          type: string
-                        locker_name:
-                          type: string
-                        store_id:
-                          type: string
-                        action_type:
-                          type: string
-                          enum: ["PUT", "TAKE", "FORCE_OPEN"]
-                        action_time:
-                          type: string
-                        product_serial_number:
-                          type: string
-                        staff_information:
-                          type: string
-                    example:
-                      - usage_id: 407
-                        locker_cell_id: "lc0009"
-                        locker_id: "l001"
-                        cell_number: 9
-                        display_cell_number: 1
-                        raspberry_pi_id: "pi001"
-                        locker_name: "Locker 1"
-                        store_id: "s001"
-                        action_type: "PUT"
-                        action_time: "2025-06-22T06:34:22.000Z"
-                        product_serial_number: "SN795463"
-                        staff_information: "staff1"
-                      - usage_id: 411
-                        locker_cell_id: "lc0009"
-                        locker_id: "l001"
-                        cell_number: 9
-                        display_cell_number: 2
-                        raspberry_pi_id: "pi001"
-                        locker_name: "Locker 1"
-                        store_id: "s001"
-                        action_type: "TAKE"
-                        action_time: "2025-05-30T06:34:22.000Z"
-                        product_serial_number: "SN351540"
-                        staff_information: "staff12"
-                      - usage_id: 420
-                        locker_cell_id: "lc0009"
-                        locker_id: "l001"
-                        cell_number: 9
-                        display_cell_number: 2
-                        raspberry_pi_id: "pi001"
-                        locker_name: "Locker 1"
-                        store_id: "s001"
-                        action_type: "FORCE_OPEN"
-                        action_time: "2025-05-30T06:34:22.000Z"
-                        product_serial_number: "SN351540"
-                        staff_information: "staff12"
+                        example: ["SN541146", "SN821028", "SN131371"]
+                      cell_history:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            usage_id:
+                              type: integer
+                            locker_cell_id:
+                              type: string
+                            locker_id:
+                              type: string
+                            cell_number:
+                              type: integer
+                            display_cell_number:
+                              type: integer
+                            raspberry_pi_id:
+                              type: string
+                            locker_name:
+                              type: string
+                            store_id:
+                              type: string
+                            action_type:
+                              type: string
+                            action_time:
+                              type: string
+                              format: date-time
+                            product_serial_number:
+                              type: string
+                            staff_information:
+                              type: string
+                        example:
+                          - usage_id: 407
+                            locker_cell_id: "lc0009"
+                            locker_id: "l001"
+                            cell_number: 9
+                            display_cell_number: 1
+                            raspberry_pi_id: "pi001"
+                            locker_name: "Locker 1"
+                            store_id: "s001"
+                            action_type: "PUT"
+                            action_time: "2025-06-22T06:34:22.000Z"
+                            product_serial_number: "SN795463"
+                            staff_information: "staff1"
+                          - usage_id: 411
+                            locker_cell_id: "lc0009"
+                            locker_id: "l001"
+                            cell_number: 9
+                            display_cell_number: 2
+                            raspberry_pi_id: "pi001"
+                            locker_name: "Locker 1"
+                            store_id: "s001"
+                            action_type: "TAKE"
+                            action_time: "2025-05-30T06:34:22.000Z"
+                            product_serial_number: "SN351540"
+                            staff_information: "staff12"
+                          - usage_id: 420
+                            locker_cell_id: "lc0009"
+                            locker_id: "l001"
+                            cell_number: 9
+                            display_cell_number: 2
+                            raspberry_pi_id: "pi001"
+                            locker_name: "Locker 1"
+                            store_id: "s001"
+                            action_type: "FORCE_OPEN"
+                            action_time: "2025-05-30T06:34:22.000Z"
+                            product_serial_number: "SN351540"
+                            staff_information: "staff12"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "500":
