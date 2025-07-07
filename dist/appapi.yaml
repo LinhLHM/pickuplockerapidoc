@@ -407,8 +407,8 @@ paths:
                       properties:
                         locker_cell_id:
                           type: string
-                        locker_name:
-                          type: string
+                        locker_number:
+                          type: integer
                         display_cell_number:
                           type: integer
                         status:
@@ -417,27 +417,27 @@ paths:
                           type: string
                     example:
                       - locker_cell_id: "lc0067"
-                        locker_name: "Locker 5"
+                        locker_number: 5
                         display_cell_number: 1
                         status: "使用可能"
                         last_action_time: "2025-06-22T06:34:22.000Z"
                       - locker_cell_id: "lc0094"
-                        locker_name: "Locker 6"
+                        locker_number: 6
                         display_cell_number: 2
                         status: "使用可能"
                         last_action_time: "2025-06-20T06:34:22.000Z"
                       - locker_cell_id: "lc0012"
-                        locker_name: "Locker 1"
+                        locker_number: 1
                         display_cell_number: 3
                         status: "使用可能"
                         last_action_time: null
                       - locker_cell_id: "lc0058"
-                        locker_name: "Locker 4"
+                        locker_number: 4
                         display_cell_number: 4
                         status: "使用中"
                         last_action_time: null
                       - locker_cell_id: "lc0033"
-                        locker_name: "Locker 2"
+                        locker_number: 2
                         display_cell_number: 5
                         status: "延滞中"
                         last_action_time: null
@@ -508,9 +508,9 @@ paths:
                   cell_detail:
                     type: object
                     properties:
-                      locker_name:
-                        type: string
-                        example: Locker 25
+                      locker_number:
+                        type: integer
+                        example: 25
                       display_cell_number:
                         type: integer
                         example: 3
@@ -539,8 +539,8 @@ paths:
                               type: integer
                             raspberry_pi_id:
                               type: string
-                            locker_name:
-                              type: string
+                            locker_number:
+                              type: integer
                             store_id:
                               type: string
                             action_type:
@@ -559,7 +559,7 @@ paths:
                             cell_number: 9
                             display_cell_number: 1
                             raspberry_pi_id: "pi001"
-                            locker_name: "Locker 1"
+                            locker_number: 1
                             store_id: "s001"
                             action_type: "PUT"
                             action_time: "2025-06-22T06:34:22.000Z"
@@ -571,7 +571,7 @@ paths:
                             cell_number: 9
                             display_cell_number: 2
                             raspberry_pi_id: "pi001"
-                            locker_name: "Locker 1"
+                            locker_number: 1
                             store_id: "s001"
                             action_type: "TAKE"
                             action_time: "2025-05-30T06:34:22.000Z"
@@ -583,7 +583,7 @@ paths:
                             cell_number: 9
                             display_cell_number: 2
                             raspberry_pi_id: "pi001"
-                            locker_name: "Locker 1"
+                            locker_number: 1
                             store_id: "s001"
                             action_type: "FORCE_OPEN"
                             action_time: "2025-05-30T06:34:22.000Z"
