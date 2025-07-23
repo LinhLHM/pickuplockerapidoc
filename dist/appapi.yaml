@@ -517,6 +517,9 @@ paths:
                       status:
                         type: string
                         example: 延滞中
+                      is_open:
+                        type: integer
+                        example: 0
                       products:
                         type: array
                         items:
@@ -585,7 +588,7 @@ paths:
                             raspberry_pi_id: "pi001"
                             locker_number: 1
                             store_id: "s001"
-                            action_type: "FORCE_OPEN"
+                            action_type: "PUT"
                             action_time: "2025-05-30T06:34:22.000Z"
                             product_serial_number: "SN351540"
                             staff_information: "staff12"
@@ -607,6 +610,172 @@ paths:
                   message:
                     type: string
                     example: ロッカーセルの詳細取得に失敗しました。
+
+  /store/locker/put-products:
+    post:
+      summary: Bỏ đồ vào locker
+      description: >
+          Quét qr sản phẩm để bỏ đồ vào locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - staffInformation
+                  - products
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  staffInformation:
+                    type: string
+                    example: Staff11
+                  products:
+                    type: array
+                    items:
+                      type: string
+                      example: ["SN541146", "SN821028", "SN131371"]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Bỏ đồ thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cell_id:
+                    type: string
+                    example: lc0758
+                  locker_number:
+                    type: integer
+                    example: 1
+                  display_cell_number:
+                    type: integer
+                    example: 1
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーにアイテムを入れる際にサーバーエラー。
+
+  /store/locker/take-products:
+    post:
+      summary: Lấy đồ ra từ locker
+      description: >
+          Quét qr sản phẩm để lấy đồ ra từ locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - staffInformation
+                  - productSerialNumber
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  staffInformation:
+                    type: string
+                    example: Staff11
+                  productSerialNumber:
+                    type: string
+                    example: "SN541146"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy đồ thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cell_id:
+                    type: string
+                    example: lc0758
+                  locker_number:
+                    type: integer
+                    example: 1
+                  display_cell_number:
+                    type: integer
+                    example: 1
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーにアイテムを入れる際にサーバーエラー。
 
   /store/init-password:
     post:
