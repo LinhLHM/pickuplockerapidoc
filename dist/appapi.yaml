@@ -508,6 +508,9 @@ paths:
                   cell_detail:
                     type: object
                     properties:
+                      cell_id:
+                        type: string
+                        example: lc0009
                       locker_number:
                         type: integer
                         example: 25
@@ -572,7 +575,7 @@ paths:
                             locker_cell_id: "lc0009"
                             locker_id: "l001"
                             cell_number: 9
-                            display_cell_number: 2
+                            display_cell_number: 1
                             raspberry_pi_id: "pi001"
                             locker_number: 1
                             store_id: "s001"
@@ -584,7 +587,7 @@ paths:
                             locker_cell_id: "lc0009"
                             locker_id: "l001"
                             cell_number: 9
-                            display_cell_number: 2
+                            display_cell_number: 1
                             raspberry_pi_id: "pi001"
                             locker_number: 1
                             store_id: "s001"
