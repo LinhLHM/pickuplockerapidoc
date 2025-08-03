@@ -562,7 +562,7 @@ paths:
         - bearerAuth: []
       responses:
         "200":
-          description: Lấy thông tin thành công
+          description: Lấy thông tin lịch sử thành công
           content:
             application/json:
               schema:
