@@ -462,7 +462,7 @@ paths:
 
   /store/cell-detail/:cellId:
     get:
-      summary: Lấy thông tin chi tiết của ô tủ locker theo trang
+      summary: Lấy thông tin chi tiết của ô tủ locker
       description: >
         Lấy thông tin chi tiết của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
