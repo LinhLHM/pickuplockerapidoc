@@ -580,7 +580,7 @@ paths:
                         totalItems:
                           type: integer
                           example: 100
-                  cell_history:
+                  cell_histories:
                         type: array
                         items:
                           type: object
