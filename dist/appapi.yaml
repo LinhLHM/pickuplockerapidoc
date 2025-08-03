@@ -460,11 +460,86 @@ paths:
                     type: string
                     example: ロッカーセルの一覧取得に失敗しました。
 
-  /store/cell-detail:
-    post:
+  /store/cell-detail/:cellId:
+    get:
       summary: Lấy thông tin chi tiết của ô tủ locker theo trang
       description: >
         Lấy thông tin chi tiết của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cell_detail:
+                    type: object
+                    properties:
+                      cell_id:
+                        type: string
+                        example: lc0009
+                      locker_number:
+                        type: integer
+                        example: 25
+                      display_cell_number:
+                        type: integer
+                        example: 3
+                      status:
+                        type: string
+                        example: 延滞中
+                      is_open:
+                        type: integer
+                        example: 0
+                      products:
+                        type: array
+                        items:
+                          type: string
+                        example: ["SN541146", "SN821028", "SN131371"]
+        "400":
+          description: Wrong cell id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルが見つかりません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルの詳細取得に失敗しました。
+
+  /store/cell-detail/list-history:
+    post:
+      summary: Lấy thông tin lịch sử của ô tủ
+      description: >
+        Lấy thông tin lịch sử của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
       requestBody:
@@ -505,30 +580,7 @@ paths:
                         totalItems:
                           type: integer
                           example: 100
-                  cell_detail:
-                    type: object
-                    properties:
-                      cell_id:
-                        type: string
-                        example: lc0009
-                      locker_number:
-                        type: integer
-                        example: 25
-                      display_cell_number:
-                        type: integer
-                        example: 3
-                      status:
-                        type: string
-                        example: 延滞中
-                      is_open:
-                        type: integer
-                        example: 0
-                      products:
-                        type: array
-                        items:
-                          type: string
-                        example: ["SN541146", "SN821028", "SN131371"]
-                      cell_history:
+                  cell_history:
                         type: array
                         items:
                           type: object
@@ -595,6 +647,22 @@ paths:
                             action_time: "2025-05-30T06:34:22.000Z"
                             product_serial_number: "SN351540"
                             staff_information: "staff12"
+        "400":
+          description: Wrong cell id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルが見つかりません。
         "401":
           $ref: "#/components/responses/UnauthorizedError"
         "500":
@@ -612,7 +680,7 @@ paths:
                     example: 500
                   message:
                     type: string
-                    example: ロッカーセルの詳細取得に失敗しました。
+                    example: ロッカーセルの履歴取得に失敗しました。
 
   /store/locker/put-products:
     post:
