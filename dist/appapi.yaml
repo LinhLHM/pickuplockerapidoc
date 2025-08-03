@@ -512,7 +512,7 @@ paths:
                     example: error
                   status_code:
                     type: integer
-                    example: 500
+                    example: 400
                   message:
                     type: string
                     example: ロッカーセルが見つかりません。
@@ -659,7 +659,7 @@ paths:
                     example: error
                   status_code:
                     type: integer
-                    example: 500
+                    example: 400
                   message:
                     type: string
                     example: ロッカーセルが見つかりません。
