@@ -460,13 +460,20 @@ paths:
                     type: string
                     example: ロッカーセルの一覧取得に失敗しました。
 
-  /store/cell-detail/:cellId:
+  /store/cell-detail/{cellId}:
     get:
       summary: Lấy thông tin chi tiết của ô tủ locker
       description: >
         Lấy thông tin chi tiết của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
       tags:
         - Store
+      parameters:
+        - name: cellId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của ô tủ của locker
       security:
         - bearerAuth: []
       responses:
@@ -884,6 +891,191 @@ paths:
                   message:
                     type: string
                     example: ロッカーの開扉に成功しました。
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: サーバーエラーのため、扉を開けられませんでした。
+
+  /store/{storeId}/all-locker:
+    get:
+      summary: Lấy toàn bộ locker hiện có của store
+      description: >
+        Lấy toàn bộ locker hiện có của store. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của cửa hàng cần lấy thống kê locker
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lockers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        locker_number:
+                            type: integer
+                    example:
+                      - id: "l001"
+                        locker_number: 1
+                      - id: "l002"
+                        locker_number: 2
+                      - id: "l003"
+                        locker_number: 3
+
+        "400":
+          description: Wrong store id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーを全て取得する際にサーバーエラーが発生しました。
+
+  /store/detail-locker:
+    post:
+      summary: Lấy chi tiết của locker
+      description: >
+          Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - lockerId
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  lockerId:
+                    type: string
+                    example: l001
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy chi tiết locker thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cells_condition:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        number_of_cells:
+                          type: integer
+                    example:
+                      - status: "使用可能"
+                        number_of_cells: 93
+                      - status: "使用中"
+                        number_of_cells: 4
+                  locker_cells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        locker_cell_id:
+                          type: string
+                        display_cell_number:
+                          type: integer
+                        status:
+                          type: string
+                        is_open:
+                          type: integer
+                    example:
+                      - locker_cell_id: "lc001"
+                        display_cell_number: 1
+                        status: "使用可能"
+                        is_open: 0
+                      - locker_cell_id: "lc002"
+                        display_cell_number: 2
+                        status: "延滞中"
+                        is_open: 0
+                      - locker_cell_id: "lc003"
+                        display_cell_number: 3
+                        status: "延滞中"
+                        is_open: 0
                   
         "401":
           $ref: "#/components/responses/UnauthorizedError"
