@@ -1,0 +1,1246 @@
+openapi: 3.0.3
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token bị thiếu, hết hạn hoặc không hợp lệ
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: error
+              status_code:
+                type: integer
+                example: 401
+              message:
+                type: string
+          examples:
+            missingToken:
+              summary: Không có access token
+              value:
+                status: error
+                status_code: 401
+                message: アクセストークンを指定してください。
+            invalidToken:
+              summary: Access token hết hạn hoặc không hợp lệ
+              value:
+                status: error
+                status_code: 401
+                message: アクセストークンが無効か有効期限が切れています。
+
+info:
+  title: Auth API
+  version: 1.0.0
+  description: API for app authentication with access/refresh tokens
+
+paths:
+  /auth/login:
+    post:
+      summary: Đăng nhập
+      description:
+        Đăng nhập bằng id store và password trả về accesstoken, refreshtoken và store infomation.
+        Nếu lỗi trả về lỗi tương ứng.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - password
+              properties:
+                id:
+                  type: string
+                  example: s001
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+      responses:
+        "200":
+          description: Login successfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  storeInfo:
+                    type: object
+                    properties:
+                      storeId:
+                        type: string
+                        example: s001
+                      store_name:
+                        type: string
+                        example: さくら渋谷店
+                      address:
+                        type: string
+                        example: 東京都渋谷区1-1-1
+                      management_user_id:
+                        type: string
+                        example: cli001
+                      isChangePassword:
+                        type: boolean
+                        example: false
+                      created_at:
+                        type: string
+                        example: 2025-06-22T05:23:21.000Z
+                      updated_at:
+                        type: string
+                        example: 2025-06-22T05:23:21.000Z
+        "400":
+          description: Incorrect login credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: ログイン情報が正しくありません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ログインに失敗しました。
+
+  /auth/refresh:
+    post:
+      summary: Refresh Access Token
+      description: >
+        Tạo access token mới từ refresh token còn hiệu lực.  
+        Nếu refresh token không hợp lệ hoặc hết hạn, trả lỗi tương ứng và logout người dùng khỏi tài khoản đang dùng
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        "200":
+          description: Accesstoken mới
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "400":
+          description: Không có refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: リフレッシュトークンが必要です。
+        "401":
+          description: Refresh token hết hạn
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: リフレッシュトークンの有効期限が切れました。
+        "403":
+          description: Refresh token không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 403
+                  message:
+                    type: string
+                    example: 無効なリフレッシュトークンです。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: トークンの更新に失敗しました。
+
+  /auth/logout:
+    post:
+      summary: Đăng xuất
+      description: Xóa refresh token ở DB
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        "200":
+          description: Đăng xuất thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ログアウトが完了しました。
+        "400":
+          description: Lỗi không có refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: ログアウトに失敗しました。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ログアウトに失敗しました。
+
+  /store/cells-condition/{storeId}:
+    get:
+      summary: Get trạng thái của tất cả các ô của locker
+      description: >
+        Lấy trạng thái của tất cả các ô của locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của cửa hàng cần lấy thống kê locker
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cells_condition:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        number_of_cells:
+                          type: integer
+                      example:
+                        - status: "使用可能"
+                          number_of_cells: 93
+                        - status: "使用中"
+                          number_of_cells: 4
+                        - status: "延滞中"
+                          number_of_cells: 3
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーの状態の取得に失敗しました。
+
+  /store/list-cells-by-status:
+    post:
+      summary: Lấy list cell bằng status
+      description: >
+        Lấy list cell bằng status theo trang. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - storeId
+                - status
+                - page
+              properties:
+                storeId:
+                  type: string
+                  example: s001
+                status:
+                  type: string
+                  example: すべて
+                page:
+                  type: integer
+                  example: 1
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy list thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagination:
+                    type: object
+                    properties:
+                      page: 
+                        type: integer
+                        example: 1
+                      totalPages:
+                        type: integer
+                        example: 10
+                      totalItems:
+                        type: integer
+                        example: 100
+                  locker_cells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        locker_cell_id:
+                          type: string
+                        locker_number:
+                          type: integer
+                        display_cell_number:
+                          type: integer
+                        status:
+                          type: string
+                        last_action_time:
+                          type: string
+                    example:
+                      - locker_cell_id: "lc0067"
+                        locker_number: 5
+                        display_cell_number: 1
+                        status: "使用可能"
+                        last_action_time: "2025-06-22T06:34:22.000Z"
+                      - locker_cell_id: "lc0094"
+                        locker_number: 6
+                        display_cell_number: 2
+                        status: "使用可能"
+                        last_action_time: "2025-06-20T06:34:22.000Z"
+                      - locker_cell_id: "lc0012"
+                        locker_number: 1
+                        display_cell_number: 3
+                        status: "使用可能"
+                        last_action_time: null
+                      - locker_cell_id: "lc0058"
+                        locker_number: 4
+                        display_cell_number: 4
+                        status: "使用中"
+                        last_action_time: null
+                      - locker_cell_id: "lc0033"
+                        locker_number: 2
+                        display_cell_number: 5
+                        status: "延滞中"
+                        last_action_time: null
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルの一覧取得に失敗しました。
+
+  /store/cell-detail/{cellId}:
+    get:
+      summary: Lấy thông tin chi tiết của ô tủ locker
+      description: >
+        Lấy thông tin chi tiết của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      parameters:
+        - name: cellId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của ô tủ của locker
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cell_detail:
+                    type: object
+                    properties:
+                      cell_id:
+                        type: string
+                        example: lc0009
+                      locker_number:
+                        type: integer
+                        example: 25
+                      display_cell_number:
+                        type: integer
+                        example: 3
+                      status:
+                        type: string
+                        example: 延滞中
+                      is_open:
+                        type: integer
+                        example: 0
+                      products:
+                        type: array
+                        items:
+                          type: string
+                        example: ["SN541146", "SN821028", "SN131371"]
+        "400":
+          description: Wrong cell id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: ロッカーセルが見つかりません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルの詳細取得に失敗しました。
+
+  /store/cell-detail/list-history:
+    post:
+      summary: Lấy thông tin lịch sử của ô tủ
+      description: >
+        Lấy thông tin lịch sử của ô tủ locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cellId
+                - page
+              properties:
+                cellId:
+                  type: string
+                  example: lc0009
+                page:
+                  type: integer
+                  example: 1
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy thông tin lịch sử thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagination:
+                      type: object
+                      properties:
+                        page: 
+                          type: integer
+                          example: 1
+                        totalPages:
+                          type: integer
+                          example: 10
+                        totalItems:
+                          type: integer
+                          example: 100
+                  cell_histories:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            usage_id:
+                              type: integer
+                            locker_cell_id:
+                              type: string
+                            locker_id:
+                              type: string
+                            cell_number:
+                              type: integer
+                            display_cell_number:
+                              type: integer
+                            raspberry_pi_id:
+                              type: string
+                            locker_number:
+                              type: integer
+                            store_id:
+                              type: string
+                            action_type:
+                              type: string
+                            action_time:
+                              type: string
+                              format: date-time
+                            product_serial_number:
+                              type: string
+                            staff_information:
+                              type: string
+                        example:
+                          - usage_id: 407
+                            locker_cell_id: "lc0009"
+                            locker_id: "l001"
+                            cell_number: 9
+                            display_cell_number: 1
+                            raspberry_pi_id: "pi001"
+                            locker_number: 1
+                            store_id: "s001"
+                            action_type: "PUT"
+                            action_time: "2025-06-22T06:34:22.000Z"
+                            product_serial_number: "SN795463"
+                            staff_information: "staff1"
+                          - usage_id: 411
+                            locker_cell_id: "lc0009"
+                            locker_id: "l001"
+                            cell_number: 9
+                            display_cell_number: 1
+                            raspberry_pi_id: "pi001"
+                            locker_number: 1
+                            store_id: "s001"
+                            action_type: "TAKE"
+                            action_time: "2025-05-30T06:34:22.000Z"
+                            product_serial_number: "SN351540"
+                            staff_information: "staff12"
+                          - usage_id: 420
+                            locker_cell_id: "lc0009"
+                            locker_id: "l001"
+                            cell_number: 9
+                            display_cell_number: 1
+                            raspberry_pi_id: "pi001"
+                            locker_number: 1
+                            store_id: "s001"
+                            action_type: "PUT"
+                            action_time: "2025-05-30T06:34:22.000Z"
+                            product_serial_number: "SN351540"
+                            staff_information: "staff12"
+        "400":
+          description: Wrong cell id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: ロッカーセルが見つかりません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーセルの履歴取得に失敗しました。
+
+  /store/locker/put-products:
+    post:
+      summary: Bỏ đồ vào locker
+      description: >
+          Quét qr sản phẩm để bỏ đồ vào locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - staffInformation
+                  - products
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  staffInformation:
+                    type: string
+                    example: Staff11
+                  products:
+                    type: array
+                    items:
+                      type: string
+                      example: ["SN541146", "SN821028", "SN131371"]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Bỏ đồ thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cell_id:
+                    type: string
+                    example: lc0758
+                  locker_number:
+                    type: integer
+                    example: 1
+                  display_cell_number:
+                    type: integer
+                    example: 1
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーにアイテムを入れる際にサーバーエラー。
+
+  /store/locker/take-products:
+    post:
+      summary: Lấy đồ ra từ locker
+      description: >
+          Quét qr sản phẩm để lấy đồ ra từ locker. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - staffInformation
+                  - productSerialNumber
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  staffInformation:
+                    type: string
+                    example: Staff11
+                  productSerialNumber:
+                    type: string
+                    example: "SN541146"
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy đồ thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cell_id:
+                    type: string
+                    example: lc0758
+                  locker_number:
+                    type: integer
+                    example: 1
+                  display_cell_number:
+                    type: integer
+                    example: 1
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーにアイテムを入れる際にサーバーエラー。
+
+  /store/locker/force-open:
+    post:
+      summary: Force mở cửa tủ
+      description: >
+          Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - cellId
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  cellId:
+                    type: string
+                    example: lc0009
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Mở cửa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ロッカーの開扉に成功しました。
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: サーバーエラーのため、扉を開けられませんでした。
+
+  /store/{storeId}/all-locker:
+    get:
+      summary: Lấy toàn bộ locker hiện có của store
+      description: >
+        Lấy toàn bộ locker hiện có của store. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của cửa hàng cần lấy thống kê locker
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy thông tin thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lockers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        locker_number:
+                            type: integer
+                    example:
+                      - id: "l001"
+                        locker_number: 1
+                      - id: "l002"
+                        locker_number: 2
+                      - id: "l003"
+                        locker_number: 3
+
+        "400":
+          description: Wrong store id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: ロッカーを全て取得する際にサーバーエラーが発生しました。
+
+  /store/detail-locker:
+    post:
+      summary: Lấy chi tiết của locker
+      description: >
+          Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - storeId
+                  - lockerId
+                properties:
+                  storeId:
+                    type: string
+                    example: s001
+                  lockerId:
+                    type: string
+                    example: l001
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lấy chi tiết locker thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cells_condition:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        number_of_cells:
+                          type: integer
+                    example:
+                      - status: "使用可能"
+                        number_of_cells: 93
+                      - status: "使用中"
+                        number_of_cells: 4
+                  locker_cells:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        locker_cell_id:
+                          type: string
+                        display_cell_number:
+                          type: integer
+                        status:
+                          type: string
+                        is_open:
+                          type: integer
+                    example:
+                      - locker_cell_id: "lc001"
+                        display_cell_number: 1
+                        status: "使用可能"
+                        is_open: 0
+                      - locker_cell_id: "lc002"
+                        display_cell_number: 2
+                        status: "延滞中"
+                        is_open: 0
+                      - locker_cell_id: "lc003"
+                        display_cell_number: 3
+                        status: "延滞中"
+                        is_open: 0
+                  
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 店舗が見つかりません。
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: サーバーエラーのため、扉を開けられませんでした。
+
+  /store/init-password:
+    post:
+      summary: Thay đổi mật khẩu khi lần đầu tiên đăng nhập
+      description: >
+        Thay đổi mật khẩu khi lần đầu tiên đăng nhập. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - storeId
+                - newPassword
+              properties:
+                storeId:
+                  type: string
+                  example: s001
+                newPassword:
+                  type: string
+                  format: password
+                  example: secret123
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Thay đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: パスワードが正常に設定されました。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: パスワードを設定できませんでした。
+
+  /store/change-password:
+    post:
+      summary: Thay đổi mật khẩu
+      description: >
+        Thay đổi mật khẩu. Yêu cầu xác thực bằng Bearer Token trong header.
+      tags:
+        - Store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - storeId
+                - oldPassword
+                - newPassword
+              properties:
+                storeId:
+                  type: string
+                  example: s001
+                oldPassword:
+                  type: string
+                  format: password
+                  example: secret12345
+                newPassword:
+                  type: string
+                  format: password
+                  example: secret123
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Thay đổi mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: パスワードが正常に変更されました。
+        "400":
+          description: Mật khẩu cũ nhập vào không đúng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: 入力された旧パスワードが正しくありません。
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  status_code:
+                    type: integer
+                    example: 500
+                  message:
+                    type: string
+                    example: パスワード変更中に予期しないエラーが発生しました。

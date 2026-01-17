@@ -1,0 +1,321 @@
+openapi: 3.0.3
+info:
+  title: Auth API
+  version: 1.0.0
+  description: API for user authentication with JWT access/refresh tokens
+
+paths:
+  /auth/admin/login:
+    post:
+      summary: User login
+      description: Login with email and password. Returns access token. Sets refresh token in HTTP-only secure cookie.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secret123
+                isRemember:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: HttpOnly refreshToken cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: CL0001
+                      email:
+                        type: string
+                        example: user@example.com
+                      acc_type:
+                        type: string
+                        example: CLIENT
+                      name:
+                        type: string
+                        example: jins company
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid email or password
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login failed
+
+  /auth/admin/refresh:
+    post:
+      summary: Refresh access token
+      description: Uses refresh token from HTTP-only cookie to issue a new access token.
+      tags: [Auth]
+      responses:
+        '200':
+          description: New access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: No refresh token provided
+        '401':
+          description: Refresh token expired
+        '403':
+          description: Invalid refresh token
+        '500':
+          description: Server error
+
+  /auth/admin/logout:
+    post:
+      summary: User logout
+      description: Deletes refresh token from DB and clears cookie
+      tags: [Auth]
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out successfully.
+        '500':
+          description: Logout failed
+
+  /list-manager:
+    get:
+      summary: Get all managers
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of managers
+
+  /create-manager-user:
+    post:
+      summary: Create a new manager
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                email:
+                  type: string
+      responses:
+        '201':
+          description: Manager created
+
+  /suspend-manager:
+    post:
+      summary: Suspend a manager
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Manager suspended
+
+  /activate-manager:
+    post:
+      summary: Activate a manager
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Manager activated
+
+  /list-manager/{managerId}/list-store:
+    get:
+      summary: Get stores by manager ID
+      tags: [Store]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: managerId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Store list
+
+  /update-manager:
+    post:
+      summary: Update manager
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                manager:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    is_active:
+                      type: boolean
+      responses:
+        '201':
+          description: Manager updated
+
+  /list-manager/{managerId}:
+    get:
+      summary: Get manager by ID
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: managerId
+          schema:
+            type: string
+          required: true
+      responses:
+        '201':
+          description: Manager data
+
+  /manager/reset-password:
+    post:
+      summary: Reset manager password
+      tags: [Manager]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                manager:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    email:
+                      type: string
+      responses:
+        '201':
+          description: Password reset successfully
+
+  /store/suspend-store:
+    post:
+      summary: Suspend a store
+      tags: [Store]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Store suspended
+
+  /store/activate-store:
+    post:
+      summary: Activate a store
+      tags: [Store]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Store activated successfully
